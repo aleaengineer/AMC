@@ -38,13 +38,6 @@ export default function LoginPage() {
           <p className="text-sm text-gray-400 mt-1">Login untuk akses NOC Dashboard</p>
         </div>
 
-        <div className="bg-[#0a0e1a] rounded-lg p-3 border border-gray-800 mb-4 text-xs">
-          <div className="font-medium text-white mb-1">Default Akun:</div>
-          <div className="text-gray-400">admin / aleale <span className="text-gray-600">(admin)</span></div>
-          <div className="text-gray-400">pop / pop123 <span className="text-gray-600">(pop)</span></div>
-          <div className="text-gray-400">teknisi / teknisi123 <span className="text-gray-600">(teknisi)</span></div>
-        </div>
-
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="text-xs text-gray-400">Username</label>
