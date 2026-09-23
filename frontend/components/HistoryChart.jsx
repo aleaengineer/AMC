@@ -57,7 +57,6 @@ export default function HistoryChart({ deviceId, iface }) {
     fetchHistory(range);
   }, [deviceId, iface, range]);
 
-  // Auto refresh for short ranges every 15s, longer every 60s
   useEffect(() => {
     if (!iface) return;
     const isShort = ['5m', '10m', '30m', '60m'].includes(range);
@@ -67,7 +66,6 @@ export default function HistoryChart({ deviceId, iface }) {
 
   const chartData = data.map(d => {
     const date = new Date(d.timestamp);
-    // format label based on range
     let timeLabel;
     if (['5m', '10m', '30m', '60m'].includes(range)) {
       timeLabel = date.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
@@ -89,13 +87,13 @@ export default function HistoryChart({ deviceId, iface }) {
   const CustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
       return (
-        <div className="bg-gray-900 border border-gray-700 rounded-lg p-3 text-xs shadow-xl">
-          <div className="text-gray-400 mb-1">{label}</div>
+        <div className="bg-[#020208] border border-cyan-400/20 rounded-xl p-3 text-xs shadow-[0_8px_32px_rgba(0,0,0,0.6)] backdrop-blur">
+          <div className="text-[var(--color-fg-muted)] mb-1.5 text-[11px]">{label} • {iface}</div>
           {payload.map((p, i) => (
             <div key={i} className="flex items-center gap-2">
-              <span className="w-3 h-3 rounded-full" style={{ background: p.color }}></span>
-              <span style={{ color: p.color }} className="font-medium">{p.name}:</span>
-              <span className="font-mono text-white">{formatBits(p.value)}</span>
+              <span className="w-2 h-2 rounded-full" style={{ background: p.color, boxShadow: `0 0 6px ${p.color}` }}></span>
+              <span style={{ color: p.color }} className="font-medium text-xs">{p.name}:</span>
+              <span className="font-mono text-white text-xs">{formatBits(p.value)}</span>
             </div>
           ))}
         </div>
@@ -105,88 +103,88 @@ export default function HistoryChart({ deviceId, iface }) {
   };
 
   return (
-    <div className="glass rounded-xl p-4 border border-gray-800">
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 mb-4">
-        <div>
-          <h3 className="font-semibold text-white flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-purple-500"></span>
-            History Traffic — {iface || '-'}
-            {loading && <span className="text-xs text-gray-500 ml-2">loading...</span>}
+    <div className="glass glass-card p-3 sm:p-4">
+      <div className="flex flex-col gap-3 mb-3">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <h3 className="font-semibold text-white flex items-center gap-2 text-sm">
+            <span className="w-1.5 h-6 rounded-full bg-gradient-to-b from-cyan-400 to-violet-500"></span>
+            History Traffic
+            <span className="glass-pill cyan text-[10px] px-2 py-0.5">{iface || '-'}</span>
+            {loading && <span className="text-[11px] text-cyan-400/70 animate-pulse">loading...</span>}
           </h3>
-          <p className="text-xs text-gray-500 mt-1">
-            {data.length} points • Range {range} • Auto refresh {['5m','10m','30m','60m'].includes(range) ? '15s' : '60s'}
-            {stats && ` • Avg RX ${formatBits(stats.avgRx)} • Avg TX ${formatBits(stats.avgTx)}`}
-          </p>
+          <span className="text-[11px] text-[var(--color-fg-muted)] hidden sm:block">{data.length} pts • {range} • {['5m','10m','30m','60m'].includes(range) ? '15s' : '60s'} refresh</span>
         </div>
-        <div className="flex flex-wrap gap-1.5">
+        {/* Range selector - scrollable on mobile */}
+        <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-thin -mx-1 px-1">
           {RANGES.map(r => (
             <button
               key={r.value}
               onClick={() => setRange(r.value)}
-              className={`px-2.5 py-1.5 rounded-md text-xs font-medium border transition ${range === r.value ? 'bg-purple-600 border-purple-500 text-white' : 'bg-gray-900 border-gray-700 text-gray-400 hover:text-white hover:border-gray-600'}`}
+              className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium border transition ${range === r.value ? 'bg-cyan-400 text-black border-cyan-400 shadow-[0_0_12px_rgba(0,235,235,0.35)]' : 'bg-white/[0.04] border-[var(--color-border)] text-[var(--color-fg-muted)] hover:text-white hover:border-cyan-400/20 hover:bg-white/[0.06]'}`}
             >
               {r.label}
             </button>
           ))}
         </div>
+        <div className="text-[11px] text-[var(--color-fg-muted)] sm:hidden">{data.length} pts • {range} • Avg RX {stats ? formatBits(stats.avgRx) : '-'} • TX {stats ? formatBits(stats.avgTx) : '-'}</div>
       </div>
 
       {stats && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-3">
-          <div className="bg-[#0a0e1a] rounded-lg p-2.5 border border-gray-800">
-            <div className="text-[11px] text-gray-500">Last RX</div>
-            <div className="font-mono font-bold text-blue-400 text-sm">{formatBits(stats.lastRx)}</div>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 mb-3">
+          <div className="rounded-xl p-2.5 border border-cyan-400/10 bg-[rgba(0,235,235,0.04)]">
+            <div className="text-[11px] text-cyan-300/60">Last RX</div>
+            <div className="font-mono font-bold text-cyan-300 text-sm">{formatBits(stats.lastRx)}</div>
           </div>
-          <div className="bg-[#0a0e1a] rounded-lg p-2.5 border border-gray-800">
-            <div className="text-[11px] text-gray-500">Last TX</div>
-            <div className="font-mono font-bold text-amber-400 text-sm">{formatBits(stats.lastTx)}</div>
+          <div className="rounded-xl p-2.5 border border-amber-400/10 bg-[rgba(237,200,49,0.04)]">
+            <div className="text-[11px] text-amber-300/60">Last TX</div>
+            <div className="font-mono font-bold text-amber-300 text-sm">{formatBits(stats.lastTx)}</div>
           </div>
-          <div className="bg-[#0a0e1a] rounded-lg p-2.5 border border-gray-800">
-            <div className="text-[11px] text-gray-500">Max RX / TX</div>
+          <div className="rounded-xl p-2.5 border border-[var(--color-border)] bg-[rgba(0,0,0,0.2)]">
+            <div className="text-[11px] text-[var(--color-fg-muted)]">Max RX / TX</div>
             <div className="font-mono text-xs text-white">{formatBits(stats.maxRx)} / {formatBits(stats.maxTx)}</div>
           </div>
-          <div className="bg-[#0a0e1a] rounded-lg p-2.5 border border-gray-800">
-            <div className="text-[11px] text-gray-500">Points</div>
-            <div className="font-mono text-xs text-white">{stats.count} points</div>
+          <div className="rounded-xl p-2.5 border border-[var(--color-border)] bg-[rgba(0,0,0,0.2)]">
+            <div className="text-[11px] text-[var(--color-fg-muted)]">Points</div>
+            <div className="font-mono text-xs text-white">{stats.count}</div>
           </div>
         </div>
       )}
 
-      <div className="h-[360px] w-full">
+      <div className="h-[300px] sm:h-[360px] w-full">
         {chartData.length === 0 ? (
-          <div className="h-full flex flex-col items-center justify-center text-gray-500 text-sm border border-dashed border-gray-800 rounded-lg">
-            <div className="text-lg mb-1">📊</div>
+          <div className="h-full flex flex-col items-center justify-center text-[var(--color-fg-muted)] text-sm border border-dashed border-[var(--color-border)] rounded-xl bg-[rgba(0,0,0,0.15)]">
+            <div className="w-10 h-10 rounded-xl bg-[rgba(0,235,235,0.08)] border border-cyan-400/20 flex items-center justify-center text-cyan-400 mb-2">◈</div>
             <div>Belum ada data untuk range {range}</div>
-            <div className="text-xs text-gray-600 mt-1">Poller menyimpan max 60k points (~83 jam / 3.5 hari @5s) • Data akan terkumpul otomatis 5s/point</div>
+            <div className="text-xs text-[var(--color-fg-dim)] mt-1 text-center px-4">Poller 60k points (~83 jam @5s) • Auto 5s/point • Cyber grid</div>
           </div>
         ) : (
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={chartData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
+            <AreaChart data={chartData} margin={{ top: 5, right: 12, left: 0, bottom: 5 }}>
               <defs>
-                <linearGradient id="colorRx" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
-                  <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+                <linearGradient id="colorRxCyber" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#00ebeb" stopOpacity={0.28}/>
+                  <stop offset="95%" stopColor="#00ebeb" stopOpacity={0}/>
                 </linearGradient>
-                <linearGradient id="colorTx" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.3}/>
-                  <stop offset="95%" stopColor="#f59e0b" stopOpacity={0}/>
+                <linearGradient id="colorTxCyber" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#edc831" stopOpacity={0.26}/>
+                  <stop offset="95%" stopColor="#edc831" stopOpacity={0}/>
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" />
-              <XAxis dataKey="time" stroke="#6b7280" fontSize={11} tickMargin={8} minTickGap={50} interval="preserveStartEnd" />
-              <YAxis stroke="#6b7280" fontSize={11} tickFormatter={(v) => formatBits(v)} width={85} />
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,235,235,0.07)" />
+              <XAxis dataKey="time" stroke="var(--color-fg-dim)" fontSize={11} tickMargin={8} minTickGap={44} interval="preserveStartEnd" />
+              <YAxis stroke="var(--color-fg-dim)" fontSize={11} tickFormatter={(v) => formatBits(v)} width={72} />
               <Tooltip content={<CustomTooltip />} />
-              <Legend wrapperStyle={{ fontSize: '12px' }} />
-              <Area type="monotone" dataKey="RX" stroke="#3b82f6" fill="url(#colorRx)" strokeWidth={2} dot={false} isAnimationActive={false} />
-              <Area type="monotone" dataKey="TX" stroke="#f59e0b" fill="url(#colorTx)" strokeWidth={2} dot={false} isAnimationActive={false} />
+              <Legend wrapperStyle={{ fontSize: '11px', color: 'var(--color-fg-muted)' }} />
+              <Area type="monotone" dataKey="RX" stroke="#00ebeb" fill="url(#colorRxCyber)" strokeWidth={2} dot={false} isAnimationActive={false} activeDot={{ r: 3, stroke: '#00ebeb', fill: '#020208' }} />
+              <Area type="monotone" dataKey="TX" stroke="#edc831" fill="url(#colorTxCyber)" strokeWidth={2} dot={false} isAnimationActive={false} activeDot={{ r: 3, stroke: '#edc831', fill: '#020208' }} />
             </AreaChart>
           </ResponsiveContainer>
         )}
       </div>
 
-      <div className="mt-3 flex items-center justify-between text-[11px] text-gray-600">
-        <span>Range {range} • {iface} • Downsampled ke 400 points untuk performa</span>
-        <button onClick={() => fetchHistory(range)} className="px-2.5 py-1 rounded bg-gray-800 hover:bg-gray-700 border border-gray-700 text-xs text-gray-300">⟳ Refresh</button>
+      <div className="mt-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-[11px] text-[var(--color-fg-dim)]">
+        <span className="hidden sm:inline">Range {range} • {iface} • Downsampled 400 pts • Cyber grid 32px</span>
+        <button onClick={() => fetchHistory(range)} className="w-full sm:w-auto px-3 py-1.5 rounded-full bg-white/[0.04] hover:bg-white/[0.08] border border-[var(--color-border)] text-xs text-[var(--color-fg-muted)] hover:text-white">⟳ Refresh</button>
       </div>
     </div>
   );

@@ -43,17 +43,10 @@ export default function Navbar() {
     <nav className="flex items-center gap-1">
       <div className="hidden lg:flex items-center gap-1 mr-2">
         {nav.map(n => (
-          <Link key={n.href} href={n.href} className={`px-3 py-1.5 rounded-lg text-xs font-medium transition ${isActive(n.href) ? 'bg-blue-600 text-white' : 'text-gray-400 hover:text-white hover:bg-gray-800'}`}>
+          <Link key={n.href} href={n.href} className={`px-2.5 py-1.5 rounded-lg text-xs font-medium transition border ${isActive(n.href) ? 'bg-[rgba(0,235,235,0.12)] border-cyan-400/30 text-cyan-400 shadow-[0_0_10px_rgba(0,235,235,0.15)]' : 'border-transparent text-[var(--color-fg-muted)] hover:text-white hover:bg-white/5 hover:border-white/10'}`}>
             <span className="mr-1">{n.icon}</span>{n.label}
           </Link>
         ))}
-      </div>
-
-      {/* mobile nav dropdown via select? keep simple */}
-      <div className="lg:hidden mr-2">
-        <select value={nav.find(n => isActive(n.href))?.href || '/'} onChange={e => router.push(e.target.value)} className="bg-gray-900 border border-gray-700 rounded-lg px-2 py-1.5 text-xs text-white">
-          {nav.map(n => <option key={n.href} value={n.href}>{n.label}</option>)}
-        </select>
       </div>
 
       {user ? (
