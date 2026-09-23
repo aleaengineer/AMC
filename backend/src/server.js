@@ -11,6 +11,7 @@ const PollerService = require('./poller');
 const { generateToken, authRequired, requireRole, socketAuth } = require('./auth');
 
 const app = express();
+app.set('trust proxy', true);
 const server = http.createServer(app);
 const PORT = process.env.PORT || 3001;
 const FRONTEND_URL = process.env.FRONTEND_URL || '*';
@@ -27,6 +28,21 @@ app.use((req, res, next) => {
 // Health (public)
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', service: 'AFNA MONITORING CENTER', version: '1.0.0', uptime: process.uptime() });
+});
+
+// Client IP (public) - untuk footer tampilkan IP pengakses
+app.get('/api/client-ip', (req, res) => {
+  const forwarded = req.headers['x-forwarded-for'];
+  const realIp = req.headers['x-real-ip'];
+  let ip = forwarded ? String(forwarded).split(',')[0].trim() : (realIp || req.ip || req.socket.remoteAddress || '');
+  // Normalize ::ffff: IPv4
+  if (ip && ip.startsWith('::ffff:')) ip = ip.substring(7);
+  // Remove port if present
+  if (ip && ip.includes(':') && !ip.includes('::')) {
+    // IPv4 with port? keep as is, but remove brackets
+    ip = ip.split(':')[0];
+  }
+  res.json({ ip, forwarded: forwarded || null, realIp: realIp || null, host: req.headers.host || null });
 });
 
 // Auth

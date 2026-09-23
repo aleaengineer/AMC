@@ -1,6 +1,7 @@
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import CyberBottomNav from "@/components/CyberBottomNav";
+import Footer from "@/components/Footer";
 
 export const metadata = {
   title: "AFNA MONITORING CENTER",
@@ -22,7 +23,7 @@ export default function RootLayout({ children }) {
         <header className="sticky top-0 z-40 glass" style={{ borderRadius: 0, borderLeft: 0, borderRight: 0, borderTop: 0, borderBottom: '1px solid rgba(0,235,235,0.12)' }}>
           <div className="max-w-[1400px] mx-auto px-3 sm:px-4 py-3 flex items-center justify-between gap-2">
             <div className="flex items-center gap-3 min-w-0">
-              <div className="w-9 h-9 rounded-lg bg-[#020208] border border-cyan-400/30 flex items-center justify-center font-bold text-cyan-400 shrink-0 shadow-[0_0_12px_rgba(0,235,235,0.25)]">AF</div>
+              <img src="https://nu.afna.link/files/settings/central/202607/eb9a98675fc570613d20115e0a57e44e.png" alt="AFNA" className="w-9 h-9 rounded-lg object-contain bg-[#020208] border border-cyan-400/30 shrink-0 shadow-[0_0_12px_rgba(0,235,235,0.25)] p-1" />
               <div className="min-w-0">
                 <h1 className="font-bold text-[15px] sm:text-lg leading-none tracking-tight truncate">AFNA <span className="text-cyan-400">MONITORING</span> CENTER</h1>
                 <p className="text-[11px] text-[var(--color-fg-muted)] hidden sm:block">Network Operations Center • Realtime 5s</p>
@@ -39,12 +40,7 @@ export default function RootLayout({ children }) {
         </header>
         <main className="max-w-[1400px] mx-auto px-3 sm:px-4 py-4 sm:py-6 pb-24 lg:pb-6">{children}</main>
         <CyberBottomNav />
-        <footer className="max-w-[1400px] mx-auto px-3 sm:px-4 py-4 text-center text-[11px] text-[var(--color-fg-dim)] border-t border-[var(--color-border)] mt-6 hidden lg:block">
-          <span className="inline-flex items-center gap-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 shadow-[0_0_6px_#00ebeb]"></span>
-            AFNA MONITORING CENTER © 2026 • Built for AFNALINK NOC • 192.168.3.249
-          </span>
-        </footer>
+        <Footer />
       </body>
     </html>
   );

@@ -33,7 +33,7 @@ export default function LoginPage() {
     <div className="min-h-[70vh] flex items-center justify-center">
       <div className="glass rounded-2xl p-8 w-full max-w-md border border-gray-800 shadow-2xl">
         <div className="text-center mb-6">
-          <div className="w-14 h-14 mx-auto rounded-xl bg-gradient-to-br from-blue-600 to-cyan-500 flex items-center justify-center font-bold text-white text-lg">AF</div>
+          <img src="https://nu.afna.link/files/settings/central/202607/eb9a98675fc570613d20115e0a57e44e.png" alt="AFNA" className="w-14 h-14 mx-auto rounded-xl object-contain bg-[#020208] border border-cyan-400/30 shadow-[0_0_12px_rgba(0,235,235,0.25)] p-1" />
           <h1 className="font-bold text-xl text-white mt-3">AFNA MONITORING CENTER</h1>
           <p className="text-sm text-gray-400 mt-1">Login untuk akses NOC Dashboard</p>
         </div>
