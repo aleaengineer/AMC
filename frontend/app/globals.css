@@ -1,0 +1,152 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* NU.AFNA.LINK THEME - AFNA MONITORING CENTER */
+:root {
+  --bg: radial-gradient(ellipse 80% 50% at 20% -10%, #00305e8c, transparent 60%), radial-gradient(ellipse 60% 50% at 80% 0%, #004f6a73, transparent 50%), radial-gradient(ellipse 90% 70% at 50% 100%, #00122ba6, transparent 60%), linear-gradient(180deg, #000a1a 0%, #00030f 100%);
+  --glass-bg: linear-gradient(135deg, #e2f1fa1a 0%, #86a4b30a 50%, #4c68760f 100%);
+  --glass-border: #e2f1fa1f;
+  --glass-shadow: 0 8px 32px #0208175c;
+  --glass-sheen: #e2f1fa26;
+  --glass-inner-b: #00030f4d;
+  --glass-hover-shadow: 0 16px 48px #0208177a, 0 0 60px #00b6b71f, inset 0 1px 0 #e2f1fa33;
+  --pill-bg: #e2f1fa14;
+  --pill-border: #e2f1fa1a;
+  --selection: #00b6b74d;
+  --scrollbar: #007ca666;
+  --scrollbar-h: #007ca699;
+  --blob-1: #007ca673;
+  --blob-2: #00a5a659;
+  --blob-3: #00498573;
+  --color-fg: #eff7fb;
+  --color-fg-muted: #abbac2;
+  --color-fg-dim: #7a8990;
+  --color-bg: #000814;
+  --color-bg-2: #001528;
+  --color-border: #d8e7f01f;
+  --color-glow-400: #00d2d3;
+  --color-glow-300: #00ebeb;
+  --gold-glow: #e3b9166b;
+  --grad-gold: linear-gradient(135deg, #f2d441 0%, #dbb327 100%);
+  --gold-ink: #322000;
+  --animate-float: float 20s ease-in-out infinite;
+  --animate-pulse-slow: pulse-slow 8s ease-in-out infinite;
+}
+
+html { color-scheme: dark; }
+html[data-theme="light"] {
+  --bg: radial-gradient(ellipse 80% 50% at 20% -10%, #b0eaf499, transparent 60%), radial-gradient(ellipse 60% 50% at 80% 0%, #f5ecc666, transparent 50%), radial-gradient(ellipse 90% 70% at 50% 100%, #c7e7f78c, transparent 60%), linear-gradient(180deg, #f6fbfd 0%, #e8f2f6 100%);
+  --glass-bg: linear-gradient(135deg, #ffffffb8 0%, #f7fdff8c 50%, #ebf8fd99 100%);
+  --glass-border: #55778b2e;
+  --glass-shadow: 0 8px 30px #3977a81f;
+  --glass-sheen: #ffffffb3;
+  --glass-inner-b: #47769d0d;
+  --glass-hover-shadow: 0 16px 44px #3977a829, 0 0 60px #00b5bc1a, inset 0 1px 0 #fffc;
+  --color-fg: #172632;
+  --color-fg-muted: #445562;
+  --color-fg-dim: #5c6b76;
+  --color-bg: #f3fafc;
+  --color-bg-2: #fff;
+  --color-border: #49677d29;
+  --blob-1: #6dd6e84d;
+  --blob-2: #f2de9038;
+  --blob-3: #abd8f347;
+  color-scheme: light;
+}
+
+@keyframes float { 0%, to { transform: translate(0) scale(1) } 33% { transform: translate(30px,-40px) scale(1.08) } 66% { transform: translate(-20px,30px) scale(.95) } }
+@keyframes pulse-slow { 0%, to { opacity: .4 } 50% { opacity: .8 } }
+
+html { --tw-font-sans: ui-sans-serif, system-ui, -apple-system, "SF Pro Display", "Segoe UI", Roboto, sans-serif; }
+
+body {
+  min-height: 100dvh;
+  color: var(--color-fg);
+  font-family: var(--tw-font-sans);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizelegibility;
+  background-attachment: fixed;
+}
+@media (max-width: 768px) {
+  body { background-attachment: scroll; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ambient-blob { animation: none !important; }
+}
+
+::selection { background: var(--selection); color: var(--color-fg); }
+:focus-visible { outline: 2px solid var(--color-glow-400); outline-offset: 3px; border-radius: 4px; }
+
+/* Scrollbar like nu.afna.link */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--scrollbar); background-clip: padding-box; border: 2px solid transparent; border-radius: 9999px; }
+::-webkit-scrollbar-thumb:hover { background: var(--scrollbar-h); background-clip: padding-box; }
+
+/* Ambient blobs - RINGAN: blur 40px, no will-change, smaller */
+.ambient-blob {
+  filter: blur(40px);
+  pointer-events: none;
+  z-index: 0;
+  border-radius: 9999px;
+  position: fixed;
+  opacity: 0.7;
+}
+@media (max-width: 768px) {
+  .ambient-blob { filter: blur(30px); opacity: 0.5; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ambient-blob { animation: none !important; }
+}
+.ambient-blob.b1 { background: radial-gradient(circle, var(--blob-1), transparent 70%); }
+.ambient-blob.b2 { background: radial-gradient(circle, var(--blob-2), transparent 70%); }
+.ambient-blob.b3 { background: radial-gradient(circle, var(--blob-3), transparent 70%); }
+
+/* Glass RINGAN: blur 16px (dari 40px) */
+.glass {
+  background: var(--glass-bg);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  backdrop-filter: blur(16px) saturate(140%);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow), inset 0 1px 0 var(--glass-sheen), inset 0 -1px 0 var(--glass-inner-b);
+  border-radius: 20px;
+  position: relative;
+  overflow: hidden;
+}
+@media (max-width: 768px) {
+  .glass { -webkit-backdrop-filter: blur(12px) saturate(130%); backdrop-filter: blur(12px) saturate(130%); }
+}
+.glass-card {
+  transition: transform .25s cubic-bezier(.22,1,.36,1), box-shadow .25s, border-color .25s;
+}
+.glass-card::before {
+  content: "";
+  border-radius: inherit;
+  background: radial-gradient(ellipse 80% 40% at 0% 0%, var(--glass-sheen), transparent 60%);
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+}
+.glass-card:hover {
+  box-shadow: var(--glass-hover-shadow);
+  border-color: #00c7c859;
+  transform: translateY(-1px);
+}
+@media (max-width: 768px) {
+  .glass-card:hover { transform: none; }
+}
+.glass-pill {
+  background: var(--pill-bg);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--pill-border);
+  border-radius: 9999px;
+  align-items: center;
+  gap: .375rem;
+  padding: .25rem .75rem;
+  font-size: .75rem;
+  font-weight: 500;
+  display: inline-flex;
+}
