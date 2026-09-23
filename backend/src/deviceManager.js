@@ -189,9 +189,12 @@ function updateDeviceStatus(id, status) {
   saveDevices(devices);
 }
 
-// History handling - in memory + file persistence
+// History handling - in memory + file persistence (traffic + health)
 let memoryHistory = {}; // { deviceId: { interfaceName: [{rx,tx,timestamp}] } }
+let memoryHealth = {}; // { deviceId: [{cpu, freeMemory, totalMemory, temperature, voltage, uptime, timestamp}] }
 let loaded = false;
+let healthLoaded = false;
+const HEALTH_FILE = path.join(DATA_DIR, 'health_history.json');
 function loadHistory() {
   if (loaded) return memoryHistory;
   ensureDataDir();
@@ -205,6 +208,24 @@ function loadHistory() {
   }
   return memoryHistory;
 }
+function loadHealth() {
+  if (healthLoaded) return memoryHealth;
+  ensureDataDir();
+  if (!fs.existsSync(HEALTH_FILE)) {
+    fs.writeFileSync(HEALTH_FILE, JSON.stringify({}, null, 2));
+    healthLoaded = true;
+    return memoryHealth;
+  }
+  try {
+    const raw = fs.readFileSync(HEALTH_FILE, 'utf8');
+    memoryHealth = JSON.parse(raw);
+    healthLoaded = true;
+  } catch (e) {
+    memoryHealth = {};
+    healthLoaded = true;
+  }
+  return memoryHealth;
+}
 
 function saveHistoryToFile() {
   try {
@@ -213,9 +234,17 @@ function saveHistoryToFile() {
     console.error('saveHistory error', e.message);
   }
 }
+function saveHealthToFile() {
+  try {
+    fs.writeFileSync(HEALTH_FILE, JSON.stringify(memoryHealth, null, 2));
+  } catch (e) {
+    console.error('saveHealth error', e.message);
+  }
+}
 
 // keep history every 5 sec save
 setInterval(saveHistoryToFile, 5000);
+setInterval(saveHealthToFile, 15000);
 
 function addHistory(deviceId, iface, rx, tx) {
   loadHistory();
@@ -228,7 +257,17 @@ function addHistory(deviceId, iface, rx, tx) {
   if (memoryHistory[deviceId][iface].length > maxPoints) {
     memoryHistory[deviceId][iface] = memoryHistory[deviceId][iface].slice(-maxPoints);
   }
-  // also downsample for older? keep simple for MVP
+}
+
+function addHealthHistory(deviceId, data) {
+  loadHealth();
+  if (!memoryHealth[deviceId]) memoryHealth[deviceId] = [];
+  const entry = { ...data, timestamp: Date.now() };
+  memoryHealth[deviceId].push(entry);
+  const maxPoints = 20000; // ~3.5 days @15s
+  if (memoryHealth[deviceId].length > maxPoints) {
+    memoryHealth[deviceId] = memoryHealth[deviceId].slice(-maxPoints);
+  }
 }
 
 function getHistory(deviceId, iface, limit = 200) {
@@ -245,6 +284,22 @@ function getHistoryRange(deviceId, iface, hours = 24) {
   return arr.filter(e => e.timestamp >= cutoff);
 }
 
+function getHealthHistory(deviceId, hours = 24, limit = null) {
+  loadHealth();
+  const arr = memoryHealth[deviceId] || [];
+  let filtered = arr;
+  if (hours) {
+    const cutoff = Date.now() - hours * 3600 * 1000;
+    filtered = arr.filter(e => e.timestamp >= cutoff);
+  }
+  if (limit) return filtered.slice(-limit);
+  return filtered;
+}
+
+function getHealthRange(deviceId, hours = 24) {
+  return getHealthHistory(deviceId, hours);
+}
+
 module.exports = {
   loadDevices,
   saveDevices,
@@ -258,9 +313,13 @@ module.exports = {
   deleteDevice,
   updateDeviceStatus,
   addHistory,
+  addHealthHistory,
   getHistory,
   getHistoryRange,
+  getHealthHistory,
+  getHealthRange,
   loadHistory,
+  loadHealth,
   encrypt,
   decrypt
 };

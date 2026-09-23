@@ -4,15 +4,17 @@ const deviceManager = require('./deviceManager');
 class PollerService {
   constructor(io) {
     this.io = io;
-    this.intervals = new Map(); // deviceId -> interval
-    this.deviceInterfaces = new Map(); // deviceId -> [ifaceNames] or null for all?
+    this.intervals = new Map(); // deviceId -> traffic interval
+    this.healthIntervals = new Map(); // deviceId -> health interval
+    this.deviceInterfaces = new Map();
     this.pollInterval = parseInt(process.env.POLL_INTERVAL) || 5000;
+    this.healthInterval = parseInt(process.env.HEALTH_POLL_INTERVAL) || 15000;
     this.retryTimers = new Map();
   }
 
   startAll() {
     const devices = deviceManager.loadDevices();
-    devices.forEach(d => this.startPolling(d.id));
+    devices.forEach(d => { this.startPolling(d.id); this.startHealthPolling(d.id); });
   }
 
   startPolling(deviceId) {
@@ -21,9 +23,18 @@ class PollerService {
       await this.pollDevice(deviceId);
     }, this.pollInterval);
     this.intervals.set(deviceId, interval);
-    // immediate poll
     this.pollDevice(deviceId);
     console.log(`[Poller] Started polling ${deviceId} every ${this.pollInterval}ms`);
+  }
+
+  startHealthPolling(deviceId) {
+    this.stopHealthPolling(deviceId);
+    const interval = setInterval(async () => {
+      await this.pollHealth(deviceId);
+    }, this.healthInterval);
+    this.healthIntervals.set(deviceId, interval);
+    this.pollHealth(deviceId);
+    console.log(`[Poller] Started health polling ${deviceId} every ${this.healthInterval}ms`);
   }
 
   stopPolling(deviceId) {
@@ -38,8 +49,50 @@ class PollerService {
     }
   }
 
+  stopHealthPolling(deviceId) {
+    if (this.healthIntervals.has(deviceId)) {
+      clearInterval(this.healthIntervals.get(deviceId));
+      this.healthIntervals.delete(deviceId);
+      console.log(`[Poller] Stopped health polling ${deviceId}`);
+    }
+  }
+
   stopAll() {
     for (const id of this.intervals.keys()) this.stopPolling(id);
+    for (const id of this.healthIntervals.keys()) this.stopHealthPolling(id);
+  }
+
+  async pollHealth(deviceId) {
+    const deviceDecrypted = deviceManager.getDeviceDecrypted(deviceId);
+    if (!deviceDecrypted) { this.stopHealthPolling(deviceId); return; }
+    const connector = new MikrotikConnector(deviceDecrypted);
+    try {
+      const resource = await connector.getResource();
+      let health = null;
+      try { health = await connector.getHealth(); } catch (_) { health = null; }
+      const freeMem = resource.freeMemory;
+      const totalMem = resource.totalMemory;
+      const memUsed = totalMem ? Math.round((1 - freeMem/totalMem)*100) : null;
+      const payload = {
+        deviceId,
+        cpu: resource.cpuLoad,
+        freeMemory: resource.freeMemory,
+        totalMemory: resource.totalMemory,
+        memUsed,
+        uptime: resource.uptime,
+        version: resource.version,
+        boardName: resource.boardName,
+        temperature: health?.temperature ?? null,
+        voltage: health?.voltage ?? null,
+        timestamp: Date.now()
+      };
+      deviceManager.addHealthHistory(deviceId, payload);
+      this.io.emit(`health:${deviceId}`, payload);
+      this.io.emit('health', payload);
+      // console.log(`[Health] ${deviceId} cpu ${payload.cpu}% temp ${payload.temperature}`);
+    } catch (e) {
+      console.warn(`[Poller] health failed ${deviceId} ${deviceDecrypted.host}: ${e.message}`);
+    }
   }
 
   // Set which interfaces to poll for a device (if null, poll all up interfaces? For MVP poll ether1, or all)
@@ -121,8 +174,8 @@ class PollerService {
 
   restartPolling(deviceId) {
     this.stopPolling(deviceId);
-    // delay 500ms
-    setTimeout(() => this.startPolling(deviceId), 500);
+    this.stopHealthPolling(deviceId);
+    setTimeout(() => { this.startPolling(deviceId); this.startHealthPolling(deviceId); }, 500);
   }
 }
 

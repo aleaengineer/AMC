@@ -294,6 +294,82 @@ class MikrotikConnector {
     return null;
   }
 
+  async getResource() {
+    if (this.apiType === 'rest') {
+      const base = `http://${this.host}:${this.port || 80}`;
+      const res = await axios.get(`${base}/rest/system/resource`, {
+        auth: { username: this.username, password: this.password },
+        timeout: 5000
+      });
+      const data = Array.isArray(res.data) ? res.data[0] : res.data;
+      return {
+        cpuLoad: parseInt(data['cpu-load'] ?? data.cpuLoad ?? 0),
+        freeMemory: parseInt(data['free-memory'] ?? data.freeMemory ?? 0),
+        totalMemory: parseInt(data['total-memory'] ?? data.totalMemory ?? 0),
+        uptime: data['uptime'] || data.uptime || '',
+        version: data['version'] || data.version || '',
+        boardName: data['board-name'] || data.boardName || '',
+        cpuCount: parseInt(data['cpu-count'] ?? data.cpuCount ?? 0),
+        cpuFrequency: parseInt(data['cpu-frequency'] ?? data.cpuFrequency ?? 0),
+        raw: data
+      };
+    }
+    const conn = new RouterOSAPI({ host: this.host, port: this.port, user: this.username, password: this.password, timeout: 5 });
+    try {
+      await conn.connect();
+      const result = await conn.write('/system/resource/print');
+      await conn.close();
+      const data = Array.isArray(result) ? result[0] : result;
+      return {
+        cpuLoad: parseInt(data['cpu-load'] ?? 0),
+        freeMemory: parseInt(data['free-memory'] ?? 0),
+        totalMemory: parseInt(data['total-memory'] ?? 0),
+        uptime: data['uptime'] || '',
+        version: data['version'] || '',
+        boardName: data['board-name'] || '',
+        cpuCount: parseInt(data['cpu-count'] ?? 0),
+        cpuFrequency: parseInt(data['cpu-frequency'] ?? 0),
+        raw: data
+      };
+    } catch (e) { try{await conn.close()}catch(_){} throw e; }
+  }
+
+  async getHealth() {
+    if (this.apiType === 'rest') {
+      const base = `http://${this.host}:${this.port || 80}`;
+      try {
+        const res = await axios.get(`${base}/rest/system/health`, {
+          auth: { username: this.username, password: this.password },
+          timeout: 5000
+        });
+        const data = Array.isArray(res.data) ? res.data[0] : res.data;
+        if (!data) return null;
+        // health may have temperature, voltage
+        const temp = data['temperature'] ?? data.temperature ?? data['cpu-temperature'] ?? null;
+        const volt = data['voltage'] ?? data.voltage ?? null;
+        return { temperature: temp !== null ? parseFloat(temp) : null, voltage: volt !== null ? parseFloat(volt) : null, raw: data };
+      } catch (e) {
+        // 404 if not supported
+        if (String(e.message).includes('404')) return null;
+        throw e;
+      }
+    }
+    const conn = new RouterOSAPI({ host: this.host, port: this.port, user: this.username, password: this.password, timeout: 5 });
+    try {
+      await conn.connect();
+      const result = await conn.write('/system/health/print');
+      await conn.close();
+      if (!result || result.length === 0) return null;
+      const data = result[0];
+      const temp = data['temperature'] ?? data['temperature'] ?? null;
+      const volt = data['voltage'] ?? null;
+      return { temperature: temp !== null ? parseFloat(String(temp).replace(/[^0-9.-]/g,'')) : null, voltage: volt !== null ? parseFloat(String(volt).replace(/[^0-9.-]/g,'')) : null, raw: data };
+    } catch (e) { try{await conn.close()}catch(_){} 
+      if (String(e.message).includes('no such command') || String(e.message).includes('failure')) return null;
+      throw e;
+    }
+  }
+
   // Auto-detect: try both and return working method
   async autoDetect() {
     // try API first

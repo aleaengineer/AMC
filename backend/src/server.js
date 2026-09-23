@@ -261,6 +261,61 @@ app.get('/api/uplinks', authRequired, async (req, res) => {
   res.json(results);
 });
 
+// Get resource (CPU, memory, uptime) - health
+app.get('/api/devices/:id/resource', authRequired, async (req, res) => {
+  if (!deviceManager.canAccessDevice(req.user, req.params.id)) return res.status(403).json({ error: 'Forbidden: not your device' });
+  const device = deviceManager.getDeviceDecrypted(req.params.id);
+  if (!device) return res.status(404).json({ error: 'Device not found' });
+  const connector = new MikrotikConnector(device);
+  try {
+    const resource = await connector.getResource();
+    const health = await connector.getHealth().catch(() => null);
+    res.json({ ...resource, health });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.get('/api/devices/:id/health', authRequired, async (req, res) => {
+  if (!deviceManager.canAccessDevice(req.user, req.params.id)) return res.status(403).json({ error: 'Forbidden: not your device' });
+  const device = deviceManager.getDeviceDecrypted(req.params.id);
+  if (!device) return res.status(404).json({ error: 'Device not found' });
+  const connector = new MikrotikConnector(device);
+  try {
+    const resource = await connector.getResource();
+    const health = await connector.getHealth().catch(() => null);
+    res.json({ resource, health, timestamp: Date.now() });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.get('/api/devices/:id/health-history', authRequired, (req, res) => {
+  if (!deviceManager.canAccessDevice(req.user, req.params.id)) return res.status(403).json({ error: 'Forbidden: not your device' });
+  const { range, hours, points } = req.query;
+  const rangeHours = parseRangeToHours(range);
+  let data;
+  if (rangeHours !== null) data = deviceManager.getHealthHistory(req.params.id, rangeHours);
+  else if (hours) data = deviceManager.getHealthHistory(req.params.id, parseFloat(hours));
+  else if (req.query.days) data = deviceManager.getHealthHistory(req.params.id, parseFloat(req.query.days) * 24);
+  else data = deviceManager.getHealthHistory(req.params.id, 24, parseInt(req.query.limit) || 200);
+  const target = parseInt(points) || 300;
+  if (data.length > target) {
+    // downsample for health: average cpu, temp
+    const bucketSize = Math.ceil(data.length / target);
+    const sampled = [];
+    for (let i = 0; i < data.length; i += bucketSize) {
+      const bucket = data.slice(i, i + bucketSize);
+      const avgCpu = Math.round(bucket.reduce((a,b)=>a+(b.cpu||0),0)/bucket.length);
+      const avgTemp = bucket.some(b=>b.temperature!==null) ? (bucket.reduce((a,b)=>a+(b.temperature||0),0)/bucket.length).toFixed(1) : null;
+      const ts = bucket[Math.floor(bucket.length/2)].timestamp;
+      sampled.push({ cpu: avgCpu, temperature: avgTemp ? parseFloat(avgTemp) : null, timestamp: ts, raw: bucket[0] });
+    }
+    return res.json(sampled);
+  }
+  res.json(data);
+});
+
 // Helper: parse range string like 5m,30m,6h,12h,1d,7d,30d
 function parseRangeToHours(range) {
   if (!range) return null;

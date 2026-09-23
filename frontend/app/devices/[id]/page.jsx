@@ -5,6 +5,7 @@ import { api, WS_URL, formatBits, getToken, getUser } from '@/lib/api';
 import { io } from 'socket.io-client';
 import TrafficChart from '@/components/TrafficChart';
 import HistoryChart from '@/components/HistoryChart';
+import HealthChart from '@/components/HealthChart';
 import Link from 'next/link';
 
 export default function DeviceDetail() {
@@ -172,6 +173,8 @@ export default function DeviceDetail() {
       <TrafficChart data={traffic} interfaceName={selected} />
 
       <HistoryChart deviceId={id} iface={selected} />
+
+      <HealthChart deviceId={id} />
 
       {/* Interfaces - swipe on mobile */}
       <div className="glass overflow-hidden">

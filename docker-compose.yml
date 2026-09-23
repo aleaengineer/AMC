@@ -13,6 +13,7 @@ services:
       - JWT_SECRET=afna-jwt-super-secret-change-me-32b
       - JWT_EXPIRES=7d
       - POLL_INTERVAL=5000
+      - HEALTH_POLL_INTERVAL=15000
       - NODE_ENV=production
     volumes:
       - backend_data:/app/data

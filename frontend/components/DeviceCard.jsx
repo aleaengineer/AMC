@@ -1,9 +1,25 @@
 "use client";
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
+import { api } from '@/lib/api';
 
 export default function DeviceCard({ device, traffic, uplink }) {
   const isOnline = device.status === 'online';
   const displayUplink = uplink || traffic?.interface || '-';
+  const [health, setHealth] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    const fetchHealth = async () => {
+      try {
+        const res = await api.get(`/api/devices/${device.id}/resource`);
+        if (!cancelled) setHealth(res.data);
+      } catch (e) { /* ignore */ }
+    };
+    fetchHealth();
+    const id = setInterval(fetchHealth, 15000);
+    return () => { cancelled = true; clearInterval(id); };
+  }, [device.id]);
   return (
     <Link href={`/devices/${device.id}`} className="block group">
       <div className="glass glass-card p-3 sm:p-4">
@@ -49,8 +65,24 @@ export default function DeviceCard({ device, traffic, uplink }) {
           </div>
         )}
 
-        <div className="mt-3 flex items-center justify-between text-[11px] text-[var(--color-fg-dim)]">
-          <span className="truncate pr-2">Last seen: {device.lastSeen ? new Date(device.lastSeen).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : '-'}</span>
+        {health && (
+          <div className="mt-2.5 grid grid-cols-3 gap-1.5 text-[11px]">
+            <div className="rounded-lg bg-[rgba(0,0,0,0.25)] border border-[var(--color-border)] p-1.5 text-center">
+              <div className="text-[10px] text-[var(--color-fg-muted)]">CPU</div>
+              <div className={`font-mono font-bold text-xs ${health.cpuLoad > 80 ? 'text-red-400' : health.cpuLoad > 50 ? 'text-amber-400' : 'text-emerald-400'}`}>{health.cpuLoad ?? '-'}%</div>
+            </div>
+            <div className="rounded-lg bg-[rgba(0,0,0,0.25)] border border-[var(--color-border)] p-1.5 text-center">
+              <div className="text-[10px] text-[var(--color-fg-muted)]">MEM</div>
+              <div className="font-mono font-bold text-xs text-violet-300">{health.totalMemory ? Math.round((1 - health.freeMemory/health.totalMemory)*100) : '-'}%</div>
+            </div>
+            <div className="rounded-lg bg-[rgba(0,0,0,0.25)] border border-[var(--color-border)] p-1.5 text-center">
+              <div className="text-[10px] text-[var(--color-fg-muted)]">TEMP</div>
+              <div className="font-mono font-bold text-xs text-amber-300">{health.health?.temperature != null ? `${health.health.temperature}°C` : (health.temperature != null ? `${health.temperature}°C` : '—')}</div>
+            </div>
+          </div>
+        )}
+        <div className="mt-2 flex items-center justify-between text-[11px] text-[var(--color-fg-dim)]">
+          <span className="truncate pr-2">Uptime: {health?.uptime ? String(health.uptime).split(' ')[0] : (device.lastSeen ? new Date(device.lastSeen).toLocaleDateString('id-ID') : '-')}</span>
           <span className="text-cyan-400/80 group-hover:text-cyan-300 shrink-0">Lihat detail →</span>
         </div>
       </div>
