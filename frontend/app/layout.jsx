@@ -24,14 +24,14 @@ export default function RootLayout({ children }) {
             <div className="flex items-center gap-3 min-w-0">
               <div className="w-9 h-9 rounded-lg bg-[#020208] border border-cyan-400/30 flex items-center justify-center font-bold text-cyan-400 shrink-0 shadow-[0_0_12px_rgba(0,235,235,0.25)]">AF</div>
               <div className="min-w-0">
-                <h1 className="font-bold text-[15px] sm:text-lg leading-none tracking-tight truncate">AFNA <span className="text-cyan-400">MONITORING</span> CENTER <span className="hidden sm:inline font-normal text-[11px] ml-1 px-1.5 py-0.5 rounded bg-amber-400 text-black">v1.2 CYBER</span></h1>
-                <p className="text-[11px] text-[var(--color-fg-muted)] hidden sm:block">NOC • Realtime 5s • Grid • Neon</p>
+                <h1 className="font-bold text-[15px] sm:text-lg leading-none tracking-tight truncate">AFNA <span className="text-cyan-400">MONITORING</span> CENTER</h1>
+                <p className="text-[11px] text-[var(--color-fg-muted)] hidden sm:block">Network Operations Center • Realtime 5s</p>
               </div>
             </div>
             <div className="flex items-center gap-2 text-xs shrink-0">
               <span className="hidden md:inline-flex items-center gap-1.5 glass-pill cyan">
                 <span className="glow-dot"></span>
-                LIVE 5s • CYBER
+                LIVE 5s
               </span>
               <Navbar />
             </div>
@@ -42,7 +42,7 @@ export default function RootLayout({ children }) {
         <footer className="max-w-[1400px] mx-auto px-3 sm:px-4 py-4 text-center text-[11px] text-[var(--color-fg-dim)] border-t border-[var(--color-border)] mt-6 hidden lg:block">
           <span className="inline-flex items-center gap-2">
             <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 shadow-[0_0_6px_#00ebeb]"></span>
-            AFNA MONITORING CENTER v1.2 CYBER © 2026 • Built for AFNALINK NOC • 192.168.3.249
+            AFNA MONITORING CENTER © 2026 • Built for AFNALINK NOC • 192.168.3.249
           </span>
         </footer>
       </body>

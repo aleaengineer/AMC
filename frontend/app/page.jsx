@@ -98,7 +98,7 @@ export default function Dashboard() {
               <span className="hidden sm:inline-flex w-1 h-6 rounded-full bg-gradient-to-b from-cyan-400 to-violet-500"></span>
               <span className="text-white">Dashboard</span>
               <span className="text-cyan-400">NOC</span>
-              <span className="hidden sm:inline-flex glass-pill cyan text-[10px] leading-none">CYBER v1.2</span>
+
             </h2>
             <p className="text-xs sm:text-sm text-[var(--color-fg-muted)] mt-1">Kelola {total} Mikrotik • {me?.role ? <span className="capitalize text-cyan-300">{me.role}</span> : ''} • Tap card untuk detail • Grid 32px</p>
           </div>

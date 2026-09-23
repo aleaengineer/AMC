@@ -37,14 +37,14 @@ export default function TrafficChart({ data, interfaceName }) {
           LIVE Traffic
           <span className="glass-pill cyan text-[10px] px-2 py-0.5">{interfaceName || 'No interface'}</span>
         </h3>
-        <span className="text-[11px] text-[var(--color-fg-muted)]">{data.length} points • 5s interval • CYBER</span>
+        <span className="text-[11px] text-[var(--color-fg-muted)]">{data.length} points • 5s interval</span>
       </div>
       <div className="h-[260px] sm:h-[320px] w-full">
         {chartData.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center text-[var(--color-fg-muted)] text-sm border border-dashed border-[var(--color-border)] rounded-xl bg-[rgba(0,0,0,0.15)]">
             <span className="text-lg mb-1">◉</span>
             <span>Belum ada data, menunggu poller 5s...</span>
-            <span className="text-[11px] text-[var(--color-fg-dim)] mt-1">Grid 32px • Neon cyan/gold</span>
+            <span className="text-[11px] text-[var(--color-fg-dim)] mt-1">Realtime</span>
           </div>
         ) : (
           <ResponsiveContainer width="100%" height="100%">
