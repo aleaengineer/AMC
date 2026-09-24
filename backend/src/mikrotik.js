@@ -344,13 +344,11 @@ class MikrotikConnector {
         });
         const data = Array.isArray(res.data) ? res.data[0] : res.data;
         if (!data) return null;
-        // health may have temperature, voltage
         const temp = data['temperature'] ?? data.temperature ?? data['cpu-temperature'] ?? null;
         const volt = data['voltage'] ?? data.voltage ?? null;
         return { temperature: temp !== null ? parseFloat(temp) : null, voltage: volt !== null ? parseFloat(volt) : null, raw: data };
       } catch (e) {
-        // 404 if not supported
-        if (String(e.message).includes('404')) return null;
+        if (String(e.message).includes('404') || String(e.message).includes('UNKNOWNREPLY') || String(e.message).includes('!empty')) return null;
         throw e;
       }
     }
@@ -365,7 +363,7 @@ class MikrotikConnector {
       const volt = data['voltage'] ?? null;
       return { temperature: temp !== null ? parseFloat(String(temp).replace(/[^0-9.-]/g,'')) : null, voltage: volt !== null ? parseFloat(String(volt).replace(/[^0-9.-]/g,'')) : null, raw: data };
     } catch (e) { try{await conn.close()}catch(_){} 
-      if (String(e.message).includes('no such command') || String(e.message).includes('failure')) return null;
+      if (String(e.message).includes('no such command') || String(e.message).includes('failure') || String(e.message).includes('UNKNOWNREPLY') || String(e.message).includes('!empty')) return null;
       throw e;
     }
   }

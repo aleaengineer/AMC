@@ -4,6 +4,16 @@ const http = require('http');
 const cors = require('cors');
 const { Server } = require('socket.io');
 
+// Prevent crash on Mikrotik !empty UNKNOWNREPLY
+process.on('uncaughtException', (err) => {
+  console.error('[Uncaught Exception]', err.message);
+  if (String(err.message).includes('UNKNOWNREPLY') || String(err.message).includes('!empty')) return;
+  console.error(err.stack);
+});
+process.on('unhandledRejection', (reason) => {
+  console.error('[Unhandled Rejection]', reason);
+});
+
 const deviceManager = require('./deviceManager');
 const userManager = require('./userManager');
 const MikrotikConnector = require('./mikrotik');
